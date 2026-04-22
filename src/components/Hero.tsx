@@ -1,8 +1,24 @@
 import { motion } from "framer-motion";
 import { Search, ArrowRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Hero() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [q, setQ] = useState("");
+
+  const go = (_term: string) => {
+    navigate({ to: user ? "/discover" : "/auth" });
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    go(q.trim());
+  };
+
   return (
     <section className="relative overflow-hidden pt-12 pb-20 sm:pt-20 sm:pb-32">
       {/* Animated background blobs */}
@@ -42,7 +58,7 @@ export function Hero() {
             transition={{ delay: 0.3, duration: 0.5 }}
             className="mt-10 max-w-xl mx-auto"
           >
-            <div className="relative group">
+            <form onSubmit={onSubmit} className="relative group">
               <div className="absolute inset-0 bg-gradient-hero rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity" />
               <div className="relative flex items-center gap-2 p-2 bg-card rounded-2xl shadow-card border border-border">
                 <div className="pl-3">
@@ -50,21 +66,24 @@ export function Hero() {
                 </div>
                 <input
                   type="text"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
                   placeholder="What do you wanna learn today?"
                   className="flex-1 bg-transparent outline-none py-3 text-base placeholder:text-muted-foreground"
                 />
-                <Button size="lg" className="rounded-xl bg-foreground text-background hover:bg-foreground/90 font-semibold gap-1">
+                <Button type="submit" size="lg" className="rounded-xl bg-foreground text-background hover:bg-foreground/90 font-semibold gap-1">
                   Search
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
-            </div>
+            </form>
 
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
               <span className="text-muted-foreground">Trending:</span>
               {["Python", "Figma", "Calculus", "Spanish", "Guitar"].map((tag) => (
                 <button
                   key={tag}
+                  onClick={() => go(tag)}
                   className="px-3 py-1 rounded-full bg-card border border-border hover:border-primary hover:text-primary transition-colors font-medium"
                 >
                   {tag}

@@ -1,4 +1,7 @@
 import { Star, Zap } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const featured = [
   { name: "Sana K.", skill: "UI/UX Design", trade: "↔ React", rating: 4.9, gradient: "bg-gradient-hero", streak: 28 },
@@ -8,6 +11,19 @@ const featured = [
 ];
 
 export function Featured() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleRequest = (name: string) => {
+    if (!user) {
+      toast.info("Sign in to send swap requests");
+      navigate({ to: "/auth" });
+      return;
+    }
+    toast.success(`Heading to Discover to find ${name}-style swaps`);
+    navigate({ to: "/discover" });
+  };
+
   return (
     <section className="py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -43,7 +59,10 @@ export function Featured() {
                 </div>
                 <div className="text-sm font-semibold text-primary mb-1">{p.skill}</div>
                 <div className="text-xs text-muted-foreground">{p.trade}</div>
-                <button className="mt-4 w-full py-2 rounded-xl bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors">
+                <button
+                  onClick={() => handleRequest(p.name)}
+                  className="mt-4 w-full py-2 rounded-xl bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors"
+                >
                   Send swap request
                 </button>
               </div>
