@@ -83,7 +83,7 @@ function Projectile() {
   const [speed, setSpeed] = useState(40);
   const [t, setT] = useState(0);
   const [running, setRunning] = useState(false);
-  const raf = useRef<number>();
+  const raf = useRef<number | null>(null);
 
   useEffect(() => {
     const c = ref.current; if (!c) return;
