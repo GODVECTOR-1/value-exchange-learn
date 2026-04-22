@@ -10,9 +10,8 @@ export function Hero() {
   const { user } = useAuth();
   const [q, setQ] = useState("");
 
-  const go = (term: string) => {
-    const target = user ? "/discover" : "/auth";
-    navigate({ to: target, search: term ? { q: term } : undefined as never });
+  const go = (_term: string) => {
+    navigate({ to: user ? "/discover" : "/auth" });
   };
 
   const onSubmit = (e: React.FormEvent) => {
