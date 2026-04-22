@@ -1,16 +1,18 @@
 import { motion } from "framer-motion";
 import { Code2, Palette, GraduationCap, Languages, Music, Camera } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 
 const categories = [
-  { name: "Coding", icon: Code2, gradient: "bg-gradient-cyber", count: "2.4k swaps" },
-  { name: "Design", icon: Palette, gradient: "bg-gradient-hero", count: "1.8k swaps" },
-  { name: "Academics", icon: GraduationCap, gradient: "bg-gradient-mint", count: "3.1k swaps" },
-  { name: "Languages", icon: Languages, gradient: "bg-gradient-sun", count: "1.2k swaps" },
-  { name: "Music", icon: Music, gradient: "bg-gradient-card", count: "890 swaps" },
-  { name: "Photography", icon: Camera, gradient: "bg-gradient-cyber", count: "640 swaps" },
+  { name: "Coding", icon: Code2, gradient: "bg-gradient-cyber", count: "2.4k swaps", to: "/learn/code" as const },
+  { name: "Design", icon: Palette, gradient: "bg-gradient-hero", count: "1.8k swaps", to: "/learn/design" as const },
+  { name: "Academics", icon: GraduationCap, gradient: "bg-gradient-mint", count: "3.1k swaps", to: "/learn/math" as const },
+  { name: "Languages", icon: Languages, gradient: "bg-gradient-sun", count: "1.2k swaps", to: "/learn/language" as const },
+  { name: "Music", icon: Music, gradient: "bg-gradient-card", count: "890 swaps", to: "/learn" as const },
+  { name: "Photography", icon: Camera, gradient: "bg-gradient-cyber", count: "640 swaps", to: "/learn" as const },
 ];
 
 export function Categories() {
+  const navigate = useNavigate();
   return (
     <section className="py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -34,6 +36,7 @@ export function Categories() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
                 whileHover={{ y: -6 }}
+                onClick={() => navigate({ to: cat.to })}
                 className="group relative aspect-square rounded-3xl p-5 text-left overflow-hidden bg-card border border-border shadow-soft hover:shadow-pop transition-shadow"
               >
                 <div className={`absolute inset-0 ${cat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
