@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      lesson_progress: {
+        Row: {
+          completed: boolean
+          created_at: string
+          hearts: number
+          id: string
+          last_activity_at: string
+          lesson_id: string
+          score: number
+          subject: string
+          updated_at: string
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          hearts?: number
+          id?: string
+          last_activity_at?: string
+          lesson_id: string
+          score?: number
+          subject: string
+          updated_at?: string
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          hearts?: number
+          id?: string
+          last_activity_at?: string
+          lesson_id?: string
+          score?: number
+          subject?: string
+          updated_at?: string
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          created_at: string
+          id: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          match_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          match_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           availability: string | null
@@ -62,12 +157,124 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          session_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          session_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewee_id?: string
+          reviewer_id?: string
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          guest_id: string
+          host_id: string
+          id: string
+          match_id: string
+          scheduled_at: string
+          status: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          guest_id: string
+          host_id: string
+          id?: string
+          match_id: string
+          scheduled_at: string
+          status?: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          guest_id?: string
+          host_id?: string
+          id?: string
+          match_id?: string
+          scheduled_at?: string
+          status?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swipes: {
+        Row: {
+          created_at: string
+          id: string
+          liked: boolean
+          swiper_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          liked: boolean
+          swiper_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          liked?: boolean
+          swiper_id?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_match_member: {
+        Args: { _match: string; _user: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

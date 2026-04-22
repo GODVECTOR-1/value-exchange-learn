@@ -32,15 +32,18 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          <Link to="/" className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground rounded-full hover:bg-muted transition-colors">
+          <Link to="/discover" className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground rounded-full hover:bg-muted transition-colors">
             Discover
           </Link>
-          <a href="#matches" className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground rounded-full hover:bg-muted transition-colors">
+          <Link to="/matches" className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground rounded-full hover:bg-muted transition-colors">
             Matches
-          </a>
-          <a href="#leaderboard" className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground rounded-full hover:bg-muted transition-colors">
+          </Link>
+          <Link to="/learn" className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground rounded-full hover:bg-muted transition-colors">
+            Learn
+          </Link>
+          <Link to="/leaderboard" className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground rounded-full hover:bg-muted transition-colors">
             Leaderboard
-          </a>
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -64,7 +67,7 @@ export function Navbar() {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
-                  <Link to="/">
+                  <Link to="/profile">
                     <UserIcon className="w-4 h-4 mr-2" /> My profile
                   </Link>
                 </DropdownMenuItem>

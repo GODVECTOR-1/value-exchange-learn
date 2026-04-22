@@ -9,9 +9,58 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SessionsRouteImport } from './routes/sessions'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as MatchesRouteImport } from './routes/matches'
+import { Route as LearnRouteImport } from './routes/learn'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MessagesMatchIdRouteImport } from './routes/messages.$matchId'
+import { Route as LearnPhysicsRouteImport } from './routes/learn.physics'
+import { Route as LearnMathRouteImport } from './routes/learn.math'
+import { Route as LearnLanguageRouteImport } from './routes/learn.language'
+import { Route as LearnDesignRouteImport } from './routes/learn.design'
+import { Route as LearnCodeRouteImport } from './routes/learn.code'
+import { Route as LearnLanguageCourseIdLessonIdRouteImport } from './routes/learn.language.$courseId.$lessonId'
 
+const SessionsRoute = SessionsRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchesRoute = MatchesRouteImport.update({
+  id: '/matches',
+  path: '/matches',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearnRoute = LearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -22,35 +71,218 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesMatchIdRoute = MessagesMatchIdRouteImport.update({
+  id: '/$matchId',
+  path: '/$matchId',
+  getParentRoute: () => MessagesRoute,
+} as any)
+const LearnPhysicsRoute = LearnPhysicsRouteImport.update({
+  id: '/physics',
+  path: '/physics',
+  getParentRoute: () => LearnRoute,
+} as any)
+const LearnMathRoute = LearnMathRouteImport.update({
+  id: '/math',
+  path: '/math',
+  getParentRoute: () => LearnRoute,
+} as any)
+const LearnLanguageRoute = LearnLanguageRouteImport.update({
+  id: '/language',
+  path: '/language',
+  getParentRoute: () => LearnRoute,
+} as any)
+const LearnDesignRoute = LearnDesignRouteImport.update({
+  id: '/design',
+  path: '/design',
+  getParentRoute: () => LearnRoute,
+} as any)
+const LearnCodeRoute = LearnCodeRouteImport.update({
+  id: '/code',
+  path: '/code',
+  getParentRoute: () => LearnRoute,
+} as any)
+const LearnLanguageCourseIdLessonIdRoute =
+  LearnLanguageCourseIdLessonIdRouteImport.update({
+    id: '/$courseId/$lessonId',
+    path: '/$courseId/$lessonId',
+    getParentRoute: () => LearnLanguageRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/discover': typeof DiscoverRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/learn': typeof LearnRouteWithChildren
+  '/matches': typeof MatchesRoute
+  '/messages': typeof MessagesRouteWithChildren
+  '/profile': typeof ProfileRoute
+  '/sessions': typeof SessionsRoute
+  '/learn/code': typeof LearnCodeRoute
+  '/learn/design': typeof LearnDesignRoute
+  '/learn/language': typeof LearnLanguageRouteWithChildren
+  '/learn/math': typeof LearnMathRoute
+  '/learn/physics': typeof LearnPhysicsRoute
+  '/messages/$matchId': typeof MessagesMatchIdRoute
+  '/learn/language/$courseId/$lessonId': typeof LearnLanguageCourseIdLessonIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/discover': typeof DiscoverRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/learn': typeof LearnRouteWithChildren
+  '/matches': typeof MatchesRoute
+  '/messages': typeof MessagesRouteWithChildren
+  '/profile': typeof ProfileRoute
+  '/sessions': typeof SessionsRoute
+  '/learn/code': typeof LearnCodeRoute
+  '/learn/design': typeof LearnDesignRoute
+  '/learn/language': typeof LearnLanguageRouteWithChildren
+  '/learn/math': typeof LearnMathRoute
+  '/learn/physics': typeof LearnPhysicsRoute
+  '/messages/$matchId': typeof MessagesMatchIdRoute
+  '/learn/language/$courseId/$lessonId': typeof LearnLanguageCourseIdLessonIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/discover': typeof DiscoverRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/learn': typeof LearnRouteWithChildren
+  '/matches': typeof MatchesRoute
+  '/messages': typeof MessagesRouteWithChildren
+  '/profile': typeof ProfileRoute
+  '/sessions': typeof SessionsRoute
+  '/learn/code': typeof LearnCodeRoute
+  '/learn/design': typeof LearnDesignRoute
+  '/learn/language': typeof LearnLanguageRouteWithChildren
+  '/learn/math': typeof LearnMathRoute
+  '/learn/physics': typeof LearnPhysicsRoute
+  '/messages/$matchId': typeof MessagesMatchIdRoute
+  '/learn/language/$courseId/$lessonId': typeof LearnLanguageCourseIdLessonIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/discover'
+    | '/leaderboard'
+    | '/learn'
+    | '/matches'
+    | '/messages'
+    | '/profile'
+    | '/sessions'
+    | '/learn/code'
+    | '/learn/design'
+    | '/learn/language'
+    | '/learn/math'
+    | '/learn/physics'
+    | '/messages/$matchId'
+    | '/learn/language/$courseId/$lessonId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth'
-  id: '__root__' | '/' | '/auth'
+  to:
+    | '/'
+    | '/auth'
+    | '/discover'
+    | '/leaderboard'
+    | '/learn'
+    | '/matches'
+    | '/messages'
+    | '/profile'
+    | '/sessions'
+    | '/learn/code'
+    | '/learn/design'
+    | '/learn/language'
+    | '/learn/math'
+    | '/learn/physics'
+    | '/messages/$matchId'
+    | '/learn/language/$courseId/$lessonId'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/discover'
+    | '/leaderboard'
+    | '/learn'
+    | '/matches'
+    | '/messages'
+    | '/profile'
+    | '/sessions'
+    | '/learn/code'
+    | '/learn/design'
+    | '/learn/language'
+    | '/learn/math'
+    | '/learn/physics'
+    | '/messages/$matchId'
+    | '/learn/language/$courseId/$lessonId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  DiscoverRoute: typeof DiscoverRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  LearnRoute: typeof LearnRouteWithChildren
+  MatchesRoute: typeof MatchesRoute
+  MessagesRoute: typeof MessagesRouteWithChildren
+  ProfileRoute: typeof ProfileRoute
+  SessionsRoute: typeof SessionsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sessions': {
+      id: '/sessions'
+      path: '/sessions'
+      fullPath: '/sessions'
+      preLoaderRoute: typeof SessionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matches': {
+      id: '/matches'
+      path: '/matches'
+      fullPath: '/matches'
+      preLoaderRoute: typeof MatchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learn': {
+      id: '/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -65,22 +297,111 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages/$matchId': {
+      id: '/messages/$matchId'
+      path: '/$matchId'
+      fullPath: '/messages/$matchId'
+      preLoaderRoute: typeof MessagesMatchIdRouteImport
+      parentRoute: typeof MessagesRoute
+    }
+    '/learn/physics': {
+      id: '/learn/physics'
+      path: '/physics'
+      fullPath: '/learn/physics'
+      preLoaderRoute: typeof LearnPhysicsRouteImport
+      parentRoute: typeof LearnRoute
+    }
+    '/learn/math': {
+      id: '/learn/math'
+      path: '/math'
+      fullPath: '/learn/math'
+      preLoaderRoute: typeof LearnMathRouteImport
+      parentRoute: typeof LearnRoute
+    }
+    '/learn/language': {
+      id: '/learn/language'
+      path: '/language'
+      fullPath: '/learn/language'
+      preLoaderRoute: typeof LearnLanguageRouteImport
+      parentRoute: typeof LearnRoute
+    }
+    '/learn/design': {
+      id: '/learn/design'
+      path: '/design'
+      fullPath: '/learn/design'
+      preLoaderRoute: typeof LearnDesignRouteImport
+      parentRoute: typeof LearnRoute
+    }
+    '/learn/code': {
+      id: '/learn/code'
+      path: '/code'
+      fullPath: '/learn/code'
+      preLoaderRoute: typeof LearnCodeRouteImport
+      parentRoute: typeof LearnRoute
+    }
+    '/learn/language/$courseId/$lessonId': {
+      id: '/learn/language/$courseId/$lessonId'
+      path: '/$courseId/$lessonId'
+      fullPath: '/learn/language/$courseId/$lessonId'
+      preLoaderRoute: typeof LearnLanguageCourseIdLessonIdRouteImport
+      parentRoute: typeof LearnLanguageRoute
+    }
   }
 }
+
+interface LearnLanguageRouteChildren {
+  LearnLanguageCourseIdLessonIdRoute: typeof LearnLanguageCourseIdLessonIdRoute
+}
+
+const LearnLanguageRouteChildren: LearnLanguageRouteChildren = {
+  LearnLanguageCourseIdLessonIdRoute: LearnLanguageCourseIdLessonIdRoute,
+}
+
+const LearnLanguageRouteWithChildren = LearnLanguageRoute._addFileChildren(
+  LearnLanguageRouteChildren,
+)
+
+interface LearnRouteChildren {
+  LearnCodeRoute: typeof LearnCodeRoute
+  LearnDesignRoute: typeof LearnDesignRoute
+  LearnLanguageRoute: typeof LearnLanguageRouteWithChildren
+  LearnMathRoute: typeof LearnMathRoute
+  LearnPhysicsRoute: typeof LearnPhysicsRoute
+}
+
+const LearnRouteChildren: LearnRouteChildren = {
+  LearnCodeRoute: LearnCodeRoute,
+  LearnDesignRoute: LearnDesignRoute,
+  LearnLanguageRoute: LearnLanguageRouteWithChildren,
+  LearnMathRoute: LearnMathRoute,
+  LearnPhysicsRoute: LearnPhysicsRoute,
+}
+
+const LearnRouteWithChildren = LearnRoute._addFileChildren(LearnRouteChildren)
+
+interface MessagesRouteChildren {
+  MessagesMatchIdRoute: typeof MessagesMatchIdRoute
+}
+
+const MessagesRouteChildren: MessagesRouteChildren = {
+  MessagesMatchIdRoute: MessagesMatchIdRoute,
+}
+
+const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
+  MessagesRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  DiscoverRoute: DiscoverRoute,
+  LeaderboardRoute: LeaderboardRoute,
+  LearnRoute: LearnRouteWithChildren,
+  MatchesRoute: MatchesRoute,
+  MessagesRoute: MessagesRouteWithChildren,
+  ProfileRoute: ProfileRoute,
+  SessionsRoute: SessionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
