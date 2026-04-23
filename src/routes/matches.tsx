@@ -26,17 +26,23 @@ function MatchesPage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: m } = await supabase.from("matches").select("*").or(`user_a.eq.${user.id},user_b.eq.${user.id}`);
-      const others = (m ?? []).map((row) => (row.user_a === user.id ? row.user_b : row.user_a));
-      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, avatar_url, skills_offered").in("user_id", others.length ? others : ["00000000-0000-0000-0000-000000000000"]);
-      const map = new Map((profiles ?? []).map((p) => [p.user_id, p]));
-      const merged: Match[] = (m ?? []).map((row) => {
-        const otherId = row.user_a === user.id ? row.user_b : row.user_a;
-        const other = map.get(otherId) ?? { user_id: otherId, display_name: null, avatar_url: null, skills_offered: [] };
-        return { id: row.id, other };
-      });
-      setMatches(merged);
-      setLoading(false);
+      try {
+        const { data: m, error } = await supabase.from("matches").select("*").or(`user_a.eq.${user.id},user_b.eq.${user.id}`);
+        if (error) throw error;
+        const others = (m ?? []).map((row) => (row.user_a === user.id ? row.user_b : row.user_a));
+        const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, avatar_url, skills_offered").in("user_id", others.length ? others : ["00000000-0000-0000-0000-000000000000"]);
+        const map = new Map((profiles ?? []).map((p) => [p.user_id, p]));
+        const merged: Match[] = (m ?? []).map((row) => {
+          const otherId = row.user_a === user.id ? row.user_b : row.user_a;
+          const other = map.get(otherId) ?? { user_id: otherId, display_name: null, avatar_url: null, skills_offered: [] };
+          return { id: row.id, other };
+        });
+        setMatches(merged);
+      } catch (err: any) {
+        toast.error(err?.message ?? "Couldn't load matches.");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [user]);
 
@@ -44,7 +50,7 @@ function MatchesPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6">
         <h1 className="text-3xl font-display font-bold mb-1">Your matches</h1>
         <p className="text-muted-foreground text-sm mb-6">{matches.length} mutual likes — start chatting!</p>
 
