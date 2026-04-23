@@ -55,22 +55,28 @@ function ProfilePage() {
   }, [user]);
 
   const save = async () => {
-    if (!user) return;
+    if (!user) { navigate({ to: "/auth" }); return; }
+    if (saving) return;
     setSaving(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        display_name: displayName.trim() || null,
-        bio: bio.trim() || null,
-        location: location.trim() || null,
-        availability: availability.trim() || null,
-        skills_offered: offered,
-        skills_wanted: wanted,
-      })
-      .eq("user_id", user.id);
-    setSaving(false);
-    if (error) toast.error(error.message);
-    else toast.success("Profile saved!");
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          display_name: displayName.trim() || null,
+          bio: bio.trim() || null,
+          location: location.trim() || null,
+          availability: availability.trim() || null,
+          skills_offered: offered,
+          skills_wanted: wanted,
+        })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      toast.success("Profile saved!");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Couldn't save profile.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const addChip = (val: string, list: string[], set: (v: string[]) => void, clear: () => void) => {
@@ -90,7 +96,7 @@ function ProfilePage() {
 
   return (
     <AppLayout>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-display font-bold">Your profile</h1>
@@ -147,7 +153,7 @@ function ProfilePage() {
             placeholder="e.g. Spanish, UI Design, Math"
           />
 
-          <Button onClick={save} disabled={saving} className="w-full rounded-full bg-foreground text-background hover:bg-foreground/90 h-12 font-semibold">
+          <Button onClick={save} disabled={saving} className="relative z-10 w-full rounded-full bg-foreground text-background hover:bg-foreground/90 h-12 font-semibold">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save profile"}
           </Button>
         </div>

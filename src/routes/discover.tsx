@@ -30,6 +30,7 @@ function DiscoverPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [swiping, setSwiping] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth" });
@@ -38,31 +39,45 @@ function DiscoverPage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data: swiped } = await supabase.from("swipes").select("target_id").eq("swiper_id", user.id);
-      const swipedIds = new Set((swiped ?? []).map((s) => s.target_id));
-      swipedIds.add(user.id);
-      const { data } = await supabase.from("profiles").select("*").limit(50);
-      const filtered = (data ?? []).filter((p) => !swipedIds.has(p.user_id));
-      setProfiles(filtered);
-      setLoading(false);
+      try {
+        const { data: swiped } = await supabase.from("swipes").select("target_id").eq("swiper_id", user.id);
+        const swipedIds = new Set((swiped ?? []).map((s) => s.target_id));
+        swipedIds.add(user.id);
+        const { data } = await supabase.from("profiles").select("*").limit(50);
+        const filtered = (data ?? []).filter((p) => !swipedIds.has(p.user_id));
+        setProfiles(filtered);
+      } catch (err) {
+        toast.error("Couldn't load profiles. Please refresh.");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [user]);
 
   const current = profiles[index];
 
   const swipe = async (liked: boolean) => {
-    if (!user || !current) return;
+    if (!current) return;
+    if (!user) { navigate({ to: "/auth" }); return; }
+    if (swiping) return;
+    setSwiping(true);
+    const target = current;
     setIndex(index + 1);
-    const { error } = await supabase.from("swipes").insert({ swiper_id: user.id, target_id: current.user_id, liked });
-    if (error) { toast.error(error.message); return; }
-    if (liked) {
-      // check for match
-      const { data: m } = await supabase
-        .from("matches")
-        .select("id")
-        .or(`and(user_a.eq.${user.id},user_b.eq.${current.user_id}),and(user_a.eq.${current.user_id},user_b.eq.${user.id})`)
-        .maybeSingle();
-      if (m) toast.success("🎉 It's a match! Check your messages.");
+    try {
+      const { error } = await supabase.from("swipes").insert({ swiper_id: user.id, target_id: target.user_id, liked });
+      if (error) throw error;
+      if (liked) {
+        const { data: m } = await supabase
+          .from("matches")
+          .select("id")
+          .or(`and(user_a.eq.${user.id},user_b.eq.${target.user_id}),and(user_a.eq.${target.user_id},user_b.eq.${user.id})`)
+          .maybeSingle();
+        if (m) toast.success("🎉 It's a match! Check your messages.");
+      }
+    } catch (err: any) {
+      toast.error(err?.message ?? "Swipe failed. Please try again.");
+    } finally {
+      setSwiping(false);
     }
   };
 
@@ -72,7 +87,7 @@ function DiscoverPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="w-full max-w-md mx-auto px-4 py-6">
         <h1 className="text-3xl font-display font-bold mb-1">Discover</h1>
         <p className="text-muted-foreground text-sm mb-6">Swipe right to swap skills.</p>
 
@@ -84,7 +99,7 @@ function DiscoverPage() {
             <Button asChild className="rounded-full"><Link to="/profile">Edit profile</Link></Button>
           </div>
         ) : (
-          <div className="relative h-[520px]">
+          <div className="relative w-full h-[520px]">
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={current.user_id}
@@ -138,12 +153,24 @@ function DiscoverPage() {
         )}
 
         {current && (
-          <div className="flex justify-center gap-6 mt-6">
-            <button onClick={() => swipe(false)} className="w-16 h-16 rounded-full bg-card border-2 border-border shadow-pop flex items-center justify-center hover:scale-110 transition-transform">
+          <div className="relative z-10 flex justify-center gap-6 mt-6">
+            <button
+              type="button"
+              onClick={() => swipe(false)}
+              disabled={swiping}
+              aria-label="Pass"
+              className="relative z-10 w-16 h-16 rounded-full bg-card border-2 border-border shadow-pop flex items-center justify-center hover:scale-110 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <X className="w-7 h-7 text-foreground/60" />
             </button>
-            <button onClick={() => swipe(true)} className="w-16 h-16 rounded-full bg-gradient-hero shadow-pop flex items-center justify-center hover:scale-110 transition-transform">
-              <Heart className="w-7 h-7 text-primary-foreground fill-current" />
+            <button
+              type="button"
+              onClick={() => swipe(true)}
+              disabled={swiping}
+              aria-label="Like"
+              className="relative z-10 w-16 h-16 rounded-full bg-gradient-hero shadow-pop flex items-center justify-center hover:scale-110 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {swiping ? <Loader2 className="w-6 h-6 animate-spin text-primary-foreground" /> : <Heart className="w-7 h-7 text-primary-foreground fill-current" />}
             </button>
           </div>
         )}

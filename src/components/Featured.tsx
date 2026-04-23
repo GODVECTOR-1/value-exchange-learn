@@ -15,13 +15,17 @@ export function Featured() {
   const { user } = useAuth();
 
   const handleRequest = (name: string) => {
-    if (!user) {
-      toast.info("Sign in to send swap requests");
-      navigate({ to: "/auth" });
-      return;
+    try {
+      if (!user) {
+        toast.info("Sign in to send swap requests");
+        navigate({ to: "/auth" });
+        return;
+      }
+      toast.success(`Heading to Discover to find ${name}-style swaps`);
+      navigate({ to: "/discover" });
+    } catch (err) {
+      toast.error("Something went wrong. Please try again.");
     }
-    toast.success(`Heading to Discover to find ${name}-style swaps`);
-    navigate({ to: "/discover" });
   };
 
   return (
@@ -60,8 +64,9 @@ export function Featured() {
                 <div className="text-sm font-semibold text-primary mb-1">{p.skill}</div>
                 <div className="text-xs text-muted-foreground">{p.trade}</div>
                 <button
+                  type="button"
                   onClick={() => handleRequest(p.name)}
-                  className="mt-4 w-full py-2 rounded-xl bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors"
+                  className="relative z-10 mt-4 w-full py-2 rounded-xl bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors"
                 >
                   Send swap request
                 </button>

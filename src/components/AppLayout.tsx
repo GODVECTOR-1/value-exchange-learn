@@ -36,7 +36,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const initial = (user?.user_metadata?.full_name || user?.email || "?").charAt(0).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen w-full overflow-x-hidden bg-background flex flex-col">
       {/* Top bar */}
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/70 border-b border-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
