@@ -31,8 +31,9 @@ function CollabPage() {
   const [output, setOutput] = useState("");
   const [running, setRunning] = useState(false);
   const [peerEditing, setPeerEditing] = useState(false);
-  const localUpdate = useRef(false);
+  const versionRef = useRef<number>(0);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingRef = useRef<{ content?: string; language?: string } | null>(null);
 
   useEffect(() => { if (!authLoading && !user) navigate({ to: "/auth" }); }, [authLoading, user, navigate]);
 
@@ -42,7 +43,6 @@ function CollabPage() {
     let cancelled = false;
     (async () => {
       try {
-        // Verify match membership
         const { data: m, error: mErr } = await supabase.from("matches").select("id").eq("id", matchId).maybeSingle();
         if (mErr || !m) { toast.error("Match not found"); navigate({ to: "/matches" }); return; }
 
@@ -54,16 +54,18 @@ function CollabPage() {
           const found = LANGS.find((l) => l.id === existing.language) ?? LANGS[0];
           setLang(found);
           setCode(existing.content ?? "");
+          versionRef.current = (existing as any).version ?? 0;
         } else {
           const seed = LANGS[0];
           const { data: created, error: cErr } = await supabase
             .from("code_sessions")
-            .insert({ match_id: matchId, language: seed.id, content: seed.sample, updated_by: user.id })
+            .insert({ match_id: matchId, language: seed.id, content: seed.sample, updated_by: user.id, version: 0 } as any)
             .select().single();
           if (cErr) throw cErr;
           if (cancelled) return;
           setLang(seed);
           setCode(created?.content ?? seed.sample);
+          versionRef.current = (created as any)?.version ?? 0;
         }
       } catch (err: any) {
         toast.error(err?.message ?? "Failed to load workspace");
@@ -74,7 +76,7 @@ function CollabPage() {
     return () => { cancelled = true; };
   }, [user, matchId, navigate]);
 
-  // Realtime subscription
+  // Realtime subscription — scoped strictly to this match_id
   useEffect(() => {
     if (!user) return;
     const ch = supabase
@@ -82,8 +84,14 @@ function CollabPage() {
       .on("postgres_changes",
         { event: "UPDATE", schema: "public", table: "code_sessions", filter: `match_id=eq.${matchId}` },
         (payload) => {
-          const row = payload.new as { content: string; language: string; updated_by: string };
-          if (row.updated_by === user.id) return; // skip own updates
+          const row = payload.new as { content: string; language: string; updated_by: string; version: number; match_id: string };
+          if (row.match_id !== matchId) return;
+          if (row.updated_by === user.id) {
+            if (row.version > versionRef.current) versionRef.current = row.version;
+            return;
+          }
+          if (row.version <= versionRef.current) return; // stale/out-of-order — ignore
+          versionRef.current = row.version;
           const found = LANGS.find((l) => l.id === row.language) ?? LANGS[0];
           setLang(found);
           setCode(row.content ?? "");
@@ -94,17 +102,37 @@ function CollabPage() {
     return () => { supabase.removeChannel(ch); };
   }, [user, matchId]);
 
-  // Debounced push of local edits
+  // Debounced push with optimistic concurrency (version check)
   const pushUpdate = (next: { content?: string; language?: string }) => {
+    pendingRef.current = { ...pendingRef.current, ...next };
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(async () => {
-      if (!user) return;
+      if (!user || !pendingRef.current) return;
+      const payload = pendingRef.current;
+      pendingRef.current = null;
+      const expected = versionRef.current;
+      const nextVersion = expected + 1;
       try {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("code_sessions")
-          .update({ ...next, updated_by: user.id })
-          .eq("match_id", matchId);
+          .update({ ...payload, updated_by: user.id, version: nextVersion } as any)
+          .eq("match_id", matchId)
+          .eq("version", expected) // optimistic lock — only succeeds if peer hasn't written
+          .select()
+          .maybeSingle();
         if (error) throw error;
+        if (!data) {
+          // Peer wrote first — fetch latest, then re-apply our pending edit on top
+          const { data: latest } = await supabase
+            .from("code_sessions").select("*").eq("match_id", matchId).maybeSingle();
+          if (latest) {
+            versionRef.current = (latest as any).version ?? 0;
+            toast.message("Merged peer changes");
+            pushUpdate(payload);
+          }
+          return;
+        }
+        versionRef.current = (data as any).version ?? nextVersion;
       } catch (err: any) {
         toast.error("Sync failed");
       }
@@ -113,7 +141,6 @@ function CollabPage() {
 
   const onCodeChange = (val: string) => {
     setCode(val);
-    localUpdate.current = true;
     pushUpdate({ content: val });
   };
 

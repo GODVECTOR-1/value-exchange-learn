@@ -23,6 +23,7 @@ export type Database = {
           match_id: string
           updated_at: string
           updated_by: string | null
+          version: number
         }
         Insert: {
           content?: string
@@ -32,6 +33,7 @@ export type Database = {
           match_id: string
           updated_at?: string
           updated_by?: string | null
+          version?: number
         }
         Update: {
           content?: string
@@ -41,6 +43,7 @@ export type Database = {
           match_id?: string
           updated_at?: string
           updated_by?: string | null
+          version?: number
         }
         Relationships: [
           {
