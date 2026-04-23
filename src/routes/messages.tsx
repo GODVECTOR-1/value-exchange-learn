@@ -24,17 +24,44 @@ function MessagesIndex() {
   const loadConvos = async () => {
     if (!user) return;
     try {
-      const { data: m, error: mErr } = await supabase.from("matches").select("*").or(`user_a.eq.${user.id},user_b.eq.${user.id}`);
+      // 1. Get my matches only
+      const { data: m, error: mErr } = await supabase
+        .from("matches")
+        .select("id, user_a, user_b")
+        .or(`user_a.eq.${user.id},user_b.eq.${user.id}`);
       if (mErr) throw mErr;
+
+      const matchIds = (m ?? []).map((row) => row.id);
+      if (matchIds.length === 0) { setConvos([]); return; }
+
       const others = (m ?? []).map((row) => (row.user_a === user.id ? row.user_b : row.user_a));
-      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", others.length ? others : ["00000000-0000-0000-0000-000000000000"]);
+
+      // 2. Fetch profiles + ALL messages for ONLY my match_ids in parallel (RLS also enforces this)
+      const [{ data: profiles }, { data: allMsgs, error: msgErr }] = await Promise.all([
+        supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", others),
+        supabase
+          .from("messages")
+          .select("match_id, content, created_at")
+          .in("match_id", matchIds)
+          .order("created_at", { ascending: false }),
+      ]);
+      if (msgErr) throw msgErr;
+
       const pmap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
-      const list: Convo[] = [];
-      for (const row of m ?? []) {
-        const otherId = row.user_a === user.id ? row.user_b : row.user_a;
-        const { data: msg } = await supabase.from("messages").select("content").eq("match_id", row.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
-        list.push({ id: row.id, other: pmap.get(otherId) ?? { user_id: otherId, display_name: null, avatar_url: null }, last: msg?.content ?? null });
+      // Reduce to last message per match (first occurrence due to DESC order)
+      const lastByMatch = new Map<string, string>();
+      for (const msg of allMsgs ?? []) {
+        if (!lastByMatch.has(msg.match_id)) lastByMatch.set(msg.match_id, msg.content);
       }
+
+      const list: Convo[] = (m ?? []).map((row) => {
+        const otherId = row.user_a === user.id ? row.user_b : row.user_a;
+        return {
+          id: row.id,
+          other: pmap.get(otherId) ?? { user_id: otherId, display_name: null, avatar_url: null },
+          last: lastByMatch.get(row.id) ?? null,
+        };
+      });
       setConvos(list);
     } catch (err: any) {
       toast.error(err?.message ?? "Couldn't load conversations");
