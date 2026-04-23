@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Mail, Lock, User as UserIcon, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -26,9 +27,20 @@ function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
-      navigate({ to: "/" });
-    }
+    if (loading || !user) return;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("display_name, skills_offered")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const complete = !!data?.display_name && (data.skills_offered?.length ?? 0) > 0;
+        navigate({ to: complete ? "/matches" : "/profile" });
+      } catch {
+        navigate({ to: "/profile" });
+      }
+    })();
   }, [user, loading, navigate]);
 
   const handleGoogle = async () => {
