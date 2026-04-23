@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send, ArrowLeft, Calendar } from "lucide-react";
+import { Loader2, Send, ArrowLeft, Calendar, Code2, Video } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/messages/$matchId")({
@@ -74,6 +74,8 @@ function ChatPage() {
           <div className="flex-1 min-w-0">
             <div className="font-semibold truncate">{other?.display_name ?? "Student"}</div>
           </div>
+          <Link to="/learn/collab/$matchId" params={{ matchId }} className="p-2 rounded-full hover:bg-muted" title="Pair coding"><Code2 className="w-5 h-5" /></Link>
+          <Link to="/learn/live/$matchId" params={{ matchId }} className="p-2 rounded-full hover:bg-muted" title="Live lesson"><Video className="w-5 h-5" /></Link>
           <Link to="/sessions" className="p-2 rounded-full hover:bg-muted" title="Schedule session"><Calendar className="w-5 h-5" /></Link>
         </div>
 

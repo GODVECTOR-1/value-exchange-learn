@@ -4,6 +4,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, MessageSquare } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/messages")({
   head: () => ({ meta: [{ title: "Messages · Swapr" }] }),
@@ -20,10 +21,11 @@ function MessagesIndex() {
 
   useEffect(() => { if (!authLoading && !user) navigate({ to: "/auth" }); }, [authLoading, user, navigate]);
 
-  useEffect(() => {
+  const loadConvos = async () => {
     if (!user) return;
-    (async () => {
-      const { data: m } = await supabase.from("matches").select("*").or(`user_a.eq.${user.id},user_b.eq.${user.id}`);
+    try {
+      const { data: m, error: mErr } = await supabase.from("matches").select("*").or(`user_a.eq.${user.id},user_b.eq.${user.id}`);
+      if (mErr) throw mErr;
       const others = (m ?? []).map((row) => (row.user_a === user.id ? row.user_b : row.user_a));
       const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", others.length ? others : ["00000000-0000-0000-0000-000000000000"]);
       const pmap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
@@ -34,8 +36,22 @@ function MessagesIndex() {
         list.push({ id: row.id, other: pmap.get(otherId) ?? { user_id: otherId, display_name: null, avatar_url: null }, last: msg?.content ?? null });
       }
       setConvos(list);
+    } catch (err: any) {
+      toast.error(err?.message ?? "Couldn't load conversations");
+    } finally {
       setLoading(false);
-    })();
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    loadConvos();
+    // Realtime: refresh inbox when any new message arrives
+    const ch = supabase
+      .channel(`inbox:${user.id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => loadConvos())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, [user]);
 
   if (authLoading || loading) return <AppLayout><div className="flex items-center justify-center py-32"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div></AppLayout>;

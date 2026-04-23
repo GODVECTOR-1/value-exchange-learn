@@ -57,21 +57,29 @@ function ProfilePage() {
   const save = async () => {
     if (!user) { navigate({ to: "/auth" }); return; }
     if (saving) return;
+    if (!displayName.trim()) { toast.error("Please add a display name."); return; }
     setSaving(true);
     try {
-      const { error } = await supabase
+      const payload = {
+        user_id: user.id,
+        display_name: displayName.trim(),
+        bio: bio.trim() || null,
+        location: location.trim() || null,
+        availability: availability.trim() || null,
+        skills_offered: offered,
+        skills_wanted: wanted,
+      };
+      // Upsert + await the row back (HTTP 200/201 with returned row)
+      const { data, error, status } = await supabase
         .from("profiles")
-        .update({
-          display_name: displayName.trim() || null,
-          bio: bio.trim() || null,
-          location: location.trim() || null,
-          availability: availability.trim() || null,
-          skills_offered: offered,
-          skills_wanted: wanted,
-        })
-        .eq("user_id", user.id);
+        .upsert(payload, { onConflict: "user_id" })
+        .select()
+        .single();
       if (error) throw error;
+      if (!data || (status !== 200 && status !== 201)) throw new Error("Save did not confirm");
       toast.success("Profile saved!");
+      const complete = !!data.display_name && (data.skills_offered?.length ?? 0) > 0;
+      if (complete) navigate({ to: "/matches" });
     } catch (err: any) {
       toast.error(err?.message ?? "Couldn't save profile.");
     } finally {

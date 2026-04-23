@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calculator, RefreshCw, Check } from "lucide-react";
+import { Calculator, Check, Lock, Trophy, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/learn/math")({
@@ -11,102 +11,132 @@ export const Route = createFileRoute("/learn/math")({
   component: MathPage,
 });
 
-type Problem = { question: string; answer: number; steps: string[] };
+type Problem = { question: string; answer: number; hint: string };
 
-function rand(min: number, max: number) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-
-function gen(level: 1 | 2 | 3): Problem {
-  if (level === 1) {
-    const a = rand(2, 20), b = rand(2, 20);
-    const op = ["+", "-", "*"][rand(0, 2)];
-    const ans = op === "+" ? a + b : op === "-" ? a - b : a * b;
-    return {
-      question: `${a} ${op} ${b} = ?`,
-      answer: ans,
-      steps: [`Take ${a} and ${b}.`, `Apply ${op}.`, `Result: ${ans}.`],
-    };
-  }
-  if (level === 2) {
-    // linear: ax + b = c
-    const x = rand(1, 12), a = rand(2, 9), b = rand(-10, 10);
-    const c = a * x + b;
-    return {
-      question: `Solve for x: ${a}x + ${b} = ${c}`,
-      answer: x,
-      steps: [`Subtract ${b} from both sides: ${a}x = ${c - b}.`, `Divide by ${a}: x = ${(c - b) / a}.`],
-    };
-  }
-  // quadratic with integer roots
-  const r1 = rand(-6, 6), r2 = rand(-6, 6);
-  const b = -(r1 + r2), c = r1 * r2;
-  return {
-    question: `Find a root of x² + ${b}x + ${c} = 0`,
-    answer: r1,
-    steps: [`Factor: (x − ${r1})(x − ${r2}) = 0.`, `Roots: x = ${r1} or x = ${r2}.`],
-  };
-}
+const LEVELS: { name: string; problems: Problem[] }[] = [
+  {
+    name: "Arithmetic",
+    problems: [
+      { question: "12 + 7 = ?", answer: 19, hint: "Add tens then units." },
+      { question: "9 × 6 = ?", answer: 54, hint: "9 × 6 = 9 × 5 + 9." },
+      { question: "84 ÷ 4 = ?", answer: 21, hint: "Divide both digits by 4." },
+    ],
+  },
+  {
+    name: "Linear equations",
+    problems: [
+      { question: "Solve: 3x + 2 = 11", answer: 3, hint: "Subtract 2, then divide by 3." },
+      { question: "Solve: 5x − 4 = 16", answer: 4, hint: "Add 4, divide by 5." },
+      { question: "Solve: 2x + 9 = 1", answer: -4, hint: "Subtract 9, divide by 2." },
+    ],
+  },
+  {
+    name: "Quadratics",
+    problems: [
+      { question: "A root of x² − 5x + 6 = 0", answer: 2, hint: "Factor (x−2)(x−3)." },
+      { question: "A root of x² − 9 = 0", answer: 3, hint: "Difference of squares." },
+      { question: "A root of x² + 2x − 8 = 0", answer: 2, hint: "Factor (x−2)(x+4)." },
+    ],
+  },
+];
 
 function MathPage() {
-  const [level, setLevel] = useState<1 | 2 | 3>(1);
-  const [p, setP] = useState<Problem>(() => gen(1));
+  const [level, setLevel] = useState(0);
+  const [step, setStep] = useState(0);
   const [val, setVal] = useState("");
-  const [showSteps, setShowSteps] = useState(false);
-  const [streak, setStreak] = useState(0);
+  const [showHint, setShowHint] = useState(false);
+  const [unlocked, setUnlocked] = useState(0); // highest unlocked level
+  const [completed, setCompleted] = useState(false);
 
-  const next = (lv: 1 | 2 | 3 = level) => { setP(gen(lv)); setVal(""); setShowSteps(false); };
+  const p = LEVELS[level].problems[step];
+  const total = LEVELS.reduce((s, l) => s + l.problems.length, 0);
+  const done = useMemo(() => {
+    let c = 0;
+    for (let i = 0; i < level; i++) c += LEVELS[i].problems.length;
+    return c + step;
+  }, [level, step]);
 
-  const check = () => {
+  const submit = () => {
     const n = Number(val);
     if (Number.isNaN(n)) { toast.error("Enter a number"); return; }
-    if (n === p.answer) {
-      setStreak(streak + 1);
-      toast.success(`Correct! Streak: ${streak + 1}`);
-      next();
+    if (n !== p.answer) { toast.error("Not quite — peek at the hint."); return; }
+    toast.success("Correct! Unlocked next problem.");
+    setVal(""); setShowHint(false);
+    if (step + 1 < LEVELS[level].problems.length) {
+      setStep(step + 1);
+    } else if (level + 1 < LEVELS.length) {
+      const nl = level + 1;
+      setLevel(nl); setStep(0);
+      setUnlocked(Math.max(unlocked, nl));
     } else {
-      setStreak(0);
-      toast.error(`Not quite. Try again or peek at hints.`);
+      setCompleted(true);
     }
   };
 
+  const restart = () => { setLevel(0); setStep(0); setVal(""); setUnlocked(0); setCompleted(false); setShowHint(false); };
+
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-gradient-sun flex items-center justify-center"><Calculator className="w-5 h-5 text-foreground" /></div>
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-display font-bold">Math practice</h1>
-            <p className="text-sm text-muted-foreground">Streak: {streak} 🔥</p>
-          </div>
-          <div className="flex gap-1">
-            {[1, 2, 3].map((lv) => (
-              <button key={lv} onClick={() => { setLevel(lv as 1 | 2 | 3); next(lv as 1 | 2 | 3); }}
-                className={`px-3 py-1.5 rounded-full text-sm font-semibold ${level === lv ? "bg-foreground text-background" : "bg-muted text-foreground"}`}>L{lv}</button>
-            ))}
+            <p className="text-sm text-muted-foreground">Solve to unlock — {done}/{total} cleared.</p>
           </div>
         </div>
 
-        <div className="bg-card rounded-3xl p-8 border border-border shadow-soft">
-          <div className="text-3xl sm:text-4xl font-display font-bold text-center py-6">{p.question}</div>
-          <Input
-            value={val}
-            onChange={(e) => setVal(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") check(); }}
-            placeholder="Your answer"
-            className="rounded-xl text-lg text-center"
-          />
-          <div className="flex gap-2 mt-4">
-            <Button onClick={check} className="flex-1 rounded-full bg-foreground text-background hover:bg-foreground/90 h-12 font-semibold"><Check className="w-4 h-4 mr-1" /> Check</Button>
-            <Button onClick={() => next()} variant="outline" className="rounded-full h-12"><RefreshCw className="w-4 h-4 mr-1" /> Skip</Button>
+        {/* Stepper */}
+        <ol className="flex items-center gap-2 mb-6">
+          {LEVELS.map((lv, i) => {
+            const isUnlocked = i <= unlocked;
+            const isActive = i === level;
+            return (
+              <li key={lv.name} className="flex-1 flex items-center gap-2">
+                <button
+                  onClick={() => isUnlocked && (setLevel(i), setStep(0), setVal(""), setShowHint(false))}
+                  disabled={!isUnlocked}
+                  className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-2xl text-xs sm:text-sm font-semibold border-2 transition ${
+                    isActive ? "border-primary bg-primary/10 text-foreground"
+                      : isUnlocked ? "border-border bg-card text-foreground hover:border-primary/40"
+                      : "border-border bg-muted text-muted-foreground cursor-not-allowed"
+                  }`}>
+                  {isUnlocked ? <span className="w-6 h-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs">{i + 1}</span> : <Lock className="w-4 h-4" />}
+                  <span className="truncate">{lv.name}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+
+        {completed ? (
+          <div className="bg-card rounded-3xl p-8 border border-border text-center shadow-soft">
+            <Trophy className="w-12 h-12 mx-auto text-warning mb-3" />
+            <h2 className="font-display font-bold text-2xl">All levels cleared!</h2>
+            <p className="text-muted-foreground mt-1">Brilliant work. Reset to play again.</p>
+            <Button onClick={restart} className="mt-4 rounded-full bg-foreground text-background hover:bg-foreground/90"><RotateCcw className="w-4 h-4 mr-1" /> Restart</Button>
           </div>
-          <button onClick={() => setShowSteps(!showSteps)} className="text-sm text-primary hover:underline mt-4">
-            {showSteps ? "Hide hints" : "Show step-by-step hints"}
-          </button>
-          {showSteps && (
-            <ol className="list-decimal pl-5 mt-2 text-sm text-muted-foreground space-y-1">
-              {p.steps.map((s, i) => <li key={i}>{s}</li>)}
-            </ol>
-          )}
-        </div>
+        ) : (
+          <div className="bg-card rounded-3xl p-6 sm:p-8 border border-border shadow-soft">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level {level + 1} · Problem {step + 1} of {LEVELS[level].problems.length}</div>
+            <div className="text-2xl sm:text-3xl font-display font-bold text-center py-6">{p.question}</div>
+            <Input
+              value={val}
+              onChange={(e) => setVal(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
+              placeholder="Your answer"
+              inputMode="numeric"
+              className="rounded-xl text-lg text-center"
+            />
+            <Button onClick={submit} className="relative z-10 w-full mt-3 rounded-full bg-foreground text-background hover:bg-foreground/90 h-12 font-semibold">
+              <Check className="w-4 h-4 mr-1" /> Submit
+            </Button>
+            <button onClick={() => setShowHint(!showHint)} className="text-sm text-primary hover:underline mt-3 block mx-auto">
+              {showHint ? "Hide hint" : "Need a hint?"}
+            </button>
+            {showHint && <p className="text-sm text-muted-foreground mt-2 text-center">{p.hint}</p>}
+          </div>
+        )}
       </div>
     </AppLayout>
   );
