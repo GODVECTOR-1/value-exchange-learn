@@ -4,6 +4,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, MessageSquare, Heart } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/matches")({
   head: () => ({ meta: [{ title: "Matches · Swapr" }] }),
