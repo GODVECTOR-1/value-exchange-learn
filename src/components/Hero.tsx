@@ -22,10 +22,10 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden pt-12 pb-20 sm:pt-20 sm:pb-32">
       {/* Animated background blobs */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-[28rem] h-[28rem] bg-primary/30 animate-blob blur-3xl" />
-        <div className="absolute top-40 -right-24 w-[24rem] h-[24rem] bg-accent/30 animate-blob blur-3xl" style={{ animationDelay: "2s" }} />
-        <div className="absolute bottom-0 left-1/3 w-[20rem] h-[20rem] bg-warning/30 animate-blob blur-3xl" style={{ animationDelay: "4s" }} />
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-24 -left-24 w-[28rem] h-[28rem] max-w-full bg-primary/30 animate-blob blur-3xl" />
+        <div className="absolute top-40 -right-24 w-[24rem] h-[24rem] max-w-full bg-accent/30 animate-blob blur-3xl" style={{ animationDelay: "2s" }} />
+        <div className="absolute bottom-0 left-1/3 w-[20rem] h-[20rem] max-w-full bg-warning/30 animate-blob blur-3xl" style={{ animationDelay: "4s" }} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -59,8 +59,8 @@ export function Hero() {
             className="mt-10 max-w-xl mx-auto"
           >
             <form onSubmit={onSubmit} className="relative group">
-              <div className="absolute inset-0 bg-gradient-hero rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity" />
-              <div className="relative flex items-center gap-2 p-2 bg-card rounded-2xl shadow-card border border-border">
+              <div className="pointer-events-none absolute inset-0 bg-gradient-hero rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity" />
+              <div className="relative z-10 flex items-center gap-2 p-2 bg-card rounded-2xl shadow-card border border-border">
                 <div className="pl-3">
                   <Search className="w-5 h-5 text-muted-foreground" />
                 </div>

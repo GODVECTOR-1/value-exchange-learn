@@ -9,10 +9,10 @@ export function CTA() {
     <section className="py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-hero p-10 sm:p-16 text-center shadow-card">
-          <div className="absolute -top-20 -left-20 w-64 h-64 bg-background/20 animate-blob blur-2xl" />
-          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-background/20 animate-blob blur-2xl" style={{ animationDelay: "3s" }} />
+          <div className="pointer-events-none absolute -top-20 -left-20 w-64 h-64 bg-background/20 animate-blob blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-20 -right-20 w-64 h-64 bg-background/20 animate-blob blur-2xl" style={{ animationDelay: "3s" }} />
 
-          <div className="relative max-w-2xl mx-auto text-primary-foreground">
+          <div className="relative z-10 max-w-2xl mx-auto text-primary-foreground">
             <h2 className="font-display font-bold text-4xl sm:text-6xl tracking-tighter text-balance">
               Your next skill is one swap away.
             </h2>
