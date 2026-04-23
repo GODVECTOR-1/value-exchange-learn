@@ -24,6 +24,8 @@ import { Route as LearnMathRouteImport } from './routes/learn.math'
 import { Route as LearnLanguageRouteImport } from './routes/learn.language'
 import { Route as LearnDesignRouteImport } from './routes/learn.design'
 import { Route as LearnCodeRouteImport } from './routes/learn.code'
+import { Route as LearnLiveMatchIdRouteImport } from './routes/learn.live.$matchId'
+import { Route as LearnCollabMatchIdRouteImport } from './routes/learn.collab.$matchId'
 import { Route as LearnLanguageCourseIdLessonIdRouteImport } from './routes/learn.language.$courseId.$lessonId'
 
 const SessionsRoute = SessionsRouteImport.update({
@@ -101,6 +103,16 @@ const LearnCodeRoute = LearnCodeRouteImport.update({
   path: '/code',
   getParentRoute: () => LearnRoute,
 } as any)
+const LearnLiveMatchIdRoute = LearnLiveMatchIdRouteImport.update({
+  id: '/live/$matchId',
+  path: '/live/$matchId',
+  getParentRoute: () => LearnRoute,
+} as any)
+const LearnCollabMatchIdRoute = LearnCollabMatchIdRouteImport.update({
+  id: '/collab/$matchId',
+  path: '/collab/$matchId',
+  getParentRoute: () => LearnRoute,
+} as any)
 const LearnLanguageCourseIdLessonIdRoute =
   LearnLanguageCourseIdLessonIdRouteImport.update({
     id: '/$courseId/$lessonId',
@@ -124,6 +136,8 @@ export interface FileRoutesByFullPath {
   '/learn/math': typeof LearnMathRoute
   '/learn/physics': typeof LearnPhysicsRoute
   '/messages/$matchId': typeof MessagesMatchIdRoute
+  '/learn/collab/$matchId': typeof LearnCollabMatchIdRoute
+  '/learn/live/$matchId': typeof LearnLiveMatchIdRoute
   '/learn/language/$courseId/$lessonId': typeof LearnLanguageCourseIdLessonIdRoute
 }
 export interface FileRoutesByTo {
@@ -142,6 +156,8 @@ export interface FileRoutesByTo {
   '/learn/math': typeof LearnMathRoute
   '/learn/physics': typeof LearnPhysicsRoute
   '/messages/$matchId': typeof MessagesMatchIdRoute
+  '/learn/collab/$matchId': typeof LearnCollabMatchIdRoute
+  '/learn/live/$matchId': typeof LearnLiveMatchIdRoute
   '/learn/language/$courseId/$lessonId': typeof LearnLanguageCourseIdLessonIdRoute
 }
 export interface FileRoutesById {
@@ -161,6 +177,8 @@ export interface FileRoutesById {
   '/learn/math': typeof LearnMathRoute
   '/learn/physics': typeof LearnPhysicsRoute
   '/messages/$matchId': typeof MessagesMatchIdRoute
+  '/learn/collab/$matchId': typeof LearnCollabMatchIdRoute
+  '/learn/live/$matchId': typeof LearnLiveMatchIdRoute
   '/learn/language/$courseId/$lessonId': typeof LearnLanguageCourseIdLessonIdRoute
 }
 export interface FileRouteTypes {
@@ -181,6 +199,8 @@ export interface FileRouteTypes {
     | '/learn/math'
     | '/learn/physics'
     | '/messages/$matchId'
+    | '/learn/collab/$matchId'
+    | '/learn/live/$matchId'
     | '/learn/language/$courseId/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -199,6 +219,8 @@ export interface FileRouteTypes {
     | '/learn/math'
     | '/learn/physics'
     | '/messages/$matchId'
+    | '/learn/collab/$matchId'
+    | '/learn/live/$matchId'
     | '/learn/language/$courseId/$lessonId'
   id:
     | '__root__'
@@ -217,6 +239,8 @@ export interface FileRouteTypes {
     | '/learn/math'
     | '/learn/physics'
     | '/messages/$matchId'
+    | '/learn/collab/$matchId'
+    | '/learn/live/$matchId'
     | '/learn/language/$courseId/$lessonId'
   fileRoutesById: FileRoutesById
 }
@@ -339,6 +363,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LearnCodeRouteImport
       parentRoute: typeof LearnRoute
     }
+    '/learn/live/$matchId': {
+      id: '/learn/live/$matchId'
+      path: '/live/$matchId'
+      fullPath: '/learn/live/$matchId'
+      preLoaderRoute: typeof LearnLiveMatchIdRouteImport
+      parentRoute: typeof LearnRoute
+    }
+    '/learn/collab/$matchId': {
+      id: '/learn/collab/$matchId'
+      path: '/collab/$matchId'
+      fullPath: '/learn/collab/$matchId'
+      preLoaderRoute: typeof LearnCollabMatchIdRouteImport
+      parentRoute: typeof LearnRoute
+    }
     '/learn/language/$courseId/$lessonId': {
       id: '/learn/language/$courseId/$lessonId'
       path: '/$courseId/$lessonId'
@@ -367,6 +405,8 @@ interface LearnRouteChildren {
   LearnLanguageRoute: typeof LearnLanguageRouteWithChildren
   LearnMathRoute: typeof LearnMathRoute
   LearnPhysicsRoute: typeof LearnPhysicsRoute
+  LearnCollabMatchIdRoute: typeof LearnCollabMatchIdRoute
+  LearnLiveMatchIdRoute: typeof LearnLiveMatchIdRoute
 }
 
 const LearnRouteChildren: LearnRouteChildren = {
@@ -375,6 +415,8 @@ const LearnRouteChildren: LearnRouteChildren = {
   LearnLanguageRoute: LearnLanguageRouteWithChildren,
   LearnMathRoute: LearnMathRoute,
   LearnPhysicsRoute: LearnPhysicsRoute,
+  LearnCollabMatchIdRoute: LearnCollabMatchIdRoute,
+  LearnLiveMatchIdRoute: LearnLiveMatchIdRoute,
 }
 
 const LearnRouteWithChildren = LearnRoute._addFileChildren(LearnRouteChildren)
