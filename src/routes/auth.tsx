@@ -55,17 +55,22 @@ function AuthPage() {
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = mode === "signin"
-      ? await signInWithEmail(email, password)
-      : await signUpWithEmail(email, password, displayName || email.split("@")[0]);
+    try {
+      const { error } = mode === "signin"
+        ? await signInWithEmail(email, password)
+        : await signUpWithEmail(email, password, displayName || email.split("@")[0]);
 
-    if (error) {
-      toast.error(error);
+      if (error) {
+        toast.error(error);
+        setSubmitting(false);
+      } else {
+        toast.success(mode === "signin" ? "Welcome back! ✨" : "Account created! Check your email to confirm.");
+        // The auth-state effect above will redirect based on profile completeness
+        if (mode === "signup") setSubmitting(false);
+      }
+    } catch (err: any) {
+      toast.error(err?.message ?? "Auth failed");
       setSubmitting(false);
-    } else {
-      toast.success(mode === "signin" ? "Welcome back! ✨" : "Account created! Check your email to confirm.");
-      if (mode === "signin") navigate({ to: "/" });
-      else setSubmitting(false);
     }
   };
 
