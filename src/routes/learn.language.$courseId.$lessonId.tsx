@@ -36,24 +36,31 @@ function LessonPage() {
   const xpEarned = score * 10;
 
   const onAnswer = async (correct: boolean) => {
+    const nextScore = correct ? score + 1 : score;
+    const nextHearts = correct ? hearts : hearts - 1;
     if (correct) {
-      setScore((s) => s + 1);
+      setScore(nextScore);
       toast.success("Correct! +10 XP");
     } else {
-      setHearts((h) => h - 1);
+      setHearts(nextHearts);
       toast.error("Try again!");
     }
-    if (idx + 1 >= total || (!correct && hearts <= 1)) {
+    const finished = idx + 1 >= total || (!correct && hearts <= 1);
+    if (finished) {
       setDone(true);
-      // persist
+      const earned = nextScore * 10;
       if (user) {
-        await supabase.from("lesson_progress").upsert({
-          user_id: user.id, subject: `language:${courseId}`, lesson_id: lessonId,
-          completed: true, score, hearts, xp_earned: xpEarned,
-          last_activity_at: new Date().toISOString(),
-        }, { onConflict: "user_id,subject,lesson_id" });
-        const { data: prof } = await supabase.from("profiles").select("xp").eq("user_id", user.id).maybeSingle();
-        await supabase.from("profiles").update({ xp: (prof?.xp ?? 0) + xpEarned }).eq("user_id", user.id);
+        try {
+          await supabase.from("lesson_progress").upsert({
+            user_id: user.id, subject: `language:${courseId}`, lesson_id: lessonId,
+            completed: true, score: nextScore, hearts: nextHearts, xp_earned: earned,
+            last_activity_at: new Date().toISOString(),
+          }, { onConflict: "user_id,subject,lesson_id" });
+          const { data: prof } = await supabase.from("profiles").select("xp").eq("user_id", user.id).maybeSingle();
+          await supabase.from("profiles").update({ xp: (prof?.xp ?? 0) + earned }).eq("user_id", user.id);
+        } catch (e) {
+          console.error("Failed to save progress", e);
+        }
       }
     } else {
       setIdx((i) => i + 1);
