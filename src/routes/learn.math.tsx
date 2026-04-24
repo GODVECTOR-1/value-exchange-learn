@@ -73,6 +73,20 @@ function MathPage() {
       setUnlocked(Math.max(unlocked, nl));
     } else {
       setCompleted(true);
+      if (user) {
+        const earned = total * 10;
+        (async () => {
+          try {
+            await supabase.from("lesson_progress").upsert({
+              user_id: user.id, subject: "math", lesson_id: "all-levels",
+              completed: true, score: total, hearts: 5, xp_earned: earned,
+              last_activity_at: new Date().toISOString(),
+            }, { onConflict: "user_id,subject,lesson_id" });
+            const { data: prof } = await supabase.from("profiles").select("xp").eq("user_id", user.id).maybeSingle();
+            await supabase.from("profiles").update({ xp: (prof?.xp ?? 0) + earned }).eq("user_id", user.id);
+          } catch (e) { console.error("save math progress failed", e); }
+        })();
+      }
     }
   };
 
