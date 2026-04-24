@@ -42,6 +42,7 @@ function PhysicsPage() {
 }
 
 function Quiz() {
+  const { user } = useAuth();
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -50,10 +51,27 @@ function Quiz() {
 
   const submit = () => {
     if (picked === null) return;
-    if (picked === q.a) { setScore(score + 1); toast.success("Correct!"); }
+    const correct = picked === q.a;
+    const nextScore = correct ? score + 1 : score;
+    if (correct) { setScore(nextScore); toast.success("Correct!"); }
     else toast.error(`Answer: ${q.options[q.a]}`);
     setPicked(null);
-    setI(i + 1);
+    const nextI = i + 1;
+    setI(nextI);
+    if (nextI >= QUIZ.length && user) {
+      const earned = nextScore * 10;
+      (async () => {
+        try {
+          await supabase.from("lesson_progress").upsert({
+            user_id: user.id, subject: "physics", lesson_id: "quiz",
+            completed: true, score: nextScore, hearts: 5, xp_earned: earned,
+            last_activity_at: new Date().toISOString(),
+          }, { onConflict: "user_id,subject,lesson_id" });
+          const { data: prof } = await supabase.from("profiles").select("xp").eq("user_id", user.id).maybeSingle();
+          await supabase.from("profiles").update({ xp: (prof?.xp ?? 0) + earned }).eq("user_id", user.id);
+        } catch (e) { console.error("save physics progress failed", e); }
+      })();
+    }
   };
 
   if (done) {
