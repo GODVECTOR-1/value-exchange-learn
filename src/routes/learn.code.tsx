@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Play, Code2 } from "lucide-react";
 import { toast } from "sonner";
+import { PracticeWithMatch } from "@/components/PracticeWithMatch";
 
 export const Route = createFileRoute("/learn/code")({
   head: () => ({ meta: [{ title: "Code Playground · Swapr" }] }),
@@ -68,6 +69,7 @@ function CodePage() {
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           <div className="w-10 h-10 rounded-xl bg-gradient-cyber flex items-center justify-center"><Code2 className="w-5 h-5 text-primary-foreground" /></div>
           <h1 className="text-2xl sm:text-3xl font-display font-bold flex-1">Code Playground</h1>
+          <PracticeWithMatch mode="collab" label="Pair code with a match" />
           <Select value={lang.id} onValueChange={onLangChange}>
             <SelectTrigger className="w-44 rounded-full"><SelectValue /></SelectTrigger>
             <SelectContent>{LANGS.map((l) => <SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>)}</SelectContent>

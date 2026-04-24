@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
 import { COURSES } from "@/data/languageLessons";
 import { Languages } from "lucide-react";
+import { PracticeWithMatch } from "@/components/PracticeWithMatch";
 
 export const Route = createFileRoute("/learn/language")({
   head: () => ({ meta: [{ title: "Languages · Swapr" }] }),
@@ -14,10 +15,11 @@ function LanguageHub() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-gradient-mint flex items-center justify-center"><Languages className="w-5 h-5 text-secondary-foreground" /></div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-display font-bold">Languages</h1>
             <p className="text-sm text-muted-foreground">Pick a course and start a lesson.</p>
           </div>
+          <PracticeWithMatch mode="live" label="Practice with a match" />
         </div>
 
         <div className="space-y-6">

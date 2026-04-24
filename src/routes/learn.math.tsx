@@ -7,6 +7,7 @@ import { Calculator, Check, Lock, Trophy, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PracticeWithMatch } from "@/components/PracticeWithMatch";
 
 export const Route = createFileRoute("/learn/math")({
   head: () => ({ meta: [{ title: "Math · Swapr" }] }),
@@ -101,6 +102,7 @@ function MathPage() {
             <h1 className="text-2xl sm:text-3xl font-display font-bold">Math practice</h1>
             <p className="text-sm text-muted-foreground">Solve to unlock — {done}/{total} cleared.</p>
           </div>
+          <PracticeWithMatch mode="live" label="Study with a match" />
         </div>
 
         {/* Stepper */}
