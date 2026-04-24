@@ -1,5 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Categories } from "@/components/Categories";
@@ -9,8 +8,6 @@ import { HowItWorks } from "@/components/HowItWorks";
 import { Leaderboard } from "@/components/Leaderboard";
 import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,27 +22,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (loading || !user) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("display_name, skills_offered")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (cancelled) return;
-        const complete = !!data?.display_name && (data.skills_offered?.length ?? 0) > 0;
-        if (complete) navigate({ to: "/matches" });
-      } catch { /* silent */ }
-    })();
-    return () => { cancelled = true; };
-  }, [user, loading, navigate]);
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
