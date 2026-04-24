@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calculator, Check, Lock, Trophy, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/learn/math")({
   head: () => ({ meta: [{ title: "Math · Swapr" }] }),
@@ -41,6 +43,7 @@ const LEVELS: { name: string; problems: Problem[] }[] = [
 ];
 
 function MathPage() {
+  const { user } = useAuth();
   const [level, setLevel] = useState(0);
   const [step, setStep] = useState(0);
   const [val, setVal] = useState("");
@@ -70,6 +73,20 @@ function MathPage() {
       setUnlocked(Math.max(unlocked, nl));
     } else {
       setCompleted(true);
+      if (user) {
+        const earned = total * 10;
+        (async () => {
+          try {
+            await supabase.from("lesson_progress").upsert({
+              user_id: user.id, subject: "math", lesson_id: "all-levels",
+              completed: true, score: total, hearts: 5, xp_earned: earned,
+              last_activity_at: new Date().toISOString(),
+            }, { onConflict: "user_id,subject,lesson_id" });
+            const { data: prof } = await supabase.from("profiles").select("xp").eq("user_id", user.id).maybeSingle();
+            await supabase.from("profiles").update({ xp: (prof?.xp ?? 0) + earned }).eq("user_id", user.id);
+          } catch (e) { console.error("save math progress failed", e); }
+        })();
+      }
     }
   };
 
