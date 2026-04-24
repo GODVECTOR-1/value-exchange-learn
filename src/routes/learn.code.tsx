@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Play, Code2 } from "lucide-react";
 import { toast } from "sonner";
 import { PracticeWithMatch } from "@/components/PracticeWithMatch";
+import { SubjectHero } from "@/components/SubjectHero";
 
 export const Route = createFileRoute("/learn/code")({
   head: () => ({ meta: [{ title: "Code Playground · Swapr" }] }),
@@ -66,18 +67,25 @@ function CodePage() {
   return (
     <AppLayout>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex items-center gap-3 mb-4 flex-wrap">
-          <div className="w-10 h-10 rounded-xl bg-gradient-cyber flex items-center justify-center"><Code2 className="w-5 h-5 text-primary-foreground" /></div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold flex-1">Code Playground</h1>
-          <PracticeWithMatch mode="collab" label="Pair code with a match" />
-          <Select value={lang.id} onValueChange={onLangChange}>
-            <SelectTrigger className="w-44 rounded-full"><SelectValue /></SelectTrigger>
-            <SelectContent>{LANGS.map((l) => <SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>)}</SelectContent>
-          </Select>
-          <Button onClick={run} disabled={running} className="rounded-full bg-foreground text-background hover:bg-foreground/90">
-            {running ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Play className="w-4 h-4 mr-1" />} Run
-          </Button>
-        </div>
+        <SubjectHero
+          icon={Code2}
+          title="Code Playground"
+          subtitle={`Live execution · ${LANGS.length} languages · Powered by Piston`}
+          gradient="bg-gradient-cyber"
+          tag={lang.label}
+          actions={
+            <>
+              <PracticeWithMatch mode="collab" label="Pair code with a match" />
+              <Select value={lang.id} onValueChange={onLangChange}>
+                <SelectTrigger className="w-40 rounded-full bg-white/90 text-foreground border-0"><SelectValue /></SelectTrigger>
+                <SelectContent>{LANGS.map((l) => <SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>)}</SelectContent>
+              </Select>
+              <Button onClick={run} disabled={running} className="relative z-10 rounded-full bg-foreground text-background hover:bg-foreground/90">
+                {running ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Play className="w-4 h-4 mr-1" />} Run
+              </Button>
+            </>
+          }
+        />
 
         <div className="grid lg:grid-cols-2 gap-4">
           <div className="bg-card rounded-2xl border border-border overflow-hidden">

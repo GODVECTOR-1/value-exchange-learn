@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeWithMatch } from "@/components/PracticeWithMatch";
+import { SubjectHero } from "@/components/SubjectHero";
 
 export const Route = createFileRoute("/learn/math")({
   head: () => ({ meta: [{ title: "Math · Swapr" }] }),
@@ -96,13 +97,20 @@ function MathPage() {
   return (
     <AppLayout>
       <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-sun flex items-center justify-center"><Calculator className="w-5 h-5 text-foreground" /></div>
-          <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-display font-bold">Math practice</h1>
-            <p className="text-sm text-muted-foreground">Solve to unlock — {done}/{total} cleared.</p>
+        <SubjectHero
+          icon={Calculator}
+          title="Math practice"
+          subtitle={`Solve to unlock — ${done}/${total} cleared.`}
+          gradient="bg-gradient-sun"
+          tag="3 levels"
+          actions={<PracticeWithMatch mode="live" label="Study with a match" />}
+        />
+
+        {/* Progress bar */}
+        <div className="mb-6">
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-gradient-hero transition-all" style={{ width: `${(done / total) * 100}%` }} />
           </div>
-          <PracticeWithMatch mode="live" label="Study with a match" />
         </div>
 
         {/* Stepper */}
