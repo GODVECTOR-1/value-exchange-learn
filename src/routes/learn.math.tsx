@@ -43,6 +43,7 @@ const LEVELS: { name: string; problems: Problem[] }[] = [
 ];
 
 function MathPage() {
+  const { user } = useAuth();
   const [level, setLevel] = useState(0);
   const [step, setStep] = useState(0);
   const [val, setVal] = useState("");
