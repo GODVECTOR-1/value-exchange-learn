@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Palette, Square, Circle, Type, Trash2, Download } from "lucide-react";
+import { SubjectHero } from "@/components/SubjectHero";
 
 export const Route = createFileRoute("/learn/design")({
   head: () => ({ meta: [{ title: "UI Design Canvas · Swapr" }] }),
@@ -62,11 +63,18 @@ function DesignPage() {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-card flex items-center justify-center"><Palette className="w-5 h-5 text-primary-foreground" /></div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold flex-1">Design Canvas</h1>
-          <Button onClick={exportPNG} variant="outline" className="rounded-full"><Download className="w-4 h-4 mr-1" /> Export</Button>
-        </div>
+        <SubjectHero
+          icon={Palette}
+          title="Design Canvas"
+          subtitle="Sketch, drag, and export your composition as PNG."
+          gradient="bg-gradient-card"
+          tag={`${shapes.length} shape${shapes.length === 1 ? "" : "s"}`}
+          actions={
+            <Button onClick={exportPNG} className="relative z-10 rounded-full bg-foreground text-background hover:bg-foreground/90">
+              <Download className="w-4 h-4 mr-1" /> Export PNG
+            </Button>
+          }
+        />
 
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <Button onClick={() => add("rect")} variant="outline" className="rounded-full"><Square className="w-4 h-4 mr-1" /> Rect</Button>

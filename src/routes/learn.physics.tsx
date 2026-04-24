@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeWithMatch } from "@/components/PracticeWithMatch";
+import { SubjectHero } from "@/components/SubjectHero";
 
 export const Route = createFileRoute("/learn/physics")({
   head: () => ({ meta: [{ title: "Physics · Swapr" }] }),
@@ -26,15 +27,18 @@ function PhysicsPage() {
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-hero flex items-center justify-center"><Atom className="w-5 h-5 text-primary-foreground" /></div>
-          <h1 className="text-2xl sm:text-3xl font-display font-bold flex-1">Physics</h1>
-          <PracticeWithMatch mode="live" label="Study with a match" />
-        </div>
+        <SubjectHero
+          icon={Atom}
+          title="Physics"
+          subtitle="Test your knowledge or launch a projectile."
+          gradient="bg-gradient-hero"
+          tag="Quiz + sim"
+          actions={<PracticeWithMatch mode="live" label="Study with a match" />}
+        />
         <div className="flex gap-1 mb-4 bg-muted rounded-full p-1 w-fit">
           {([["quiz", "Quiz"], ["projectile", "Projectile sim"]] as const).map(([k, l]) => (
             <button key={k} onClick={() => setTab(k)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold ${tab === k ? "bg-background shadow-soft" : "text-muted-foreground"}`}>{l}</button>
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition ${tab === k ? "bg-background shadow-soft text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{l}</button>
           ))}
         </div>
         {tab === "quiz" ? <Quiz /> : <Projectile />}
