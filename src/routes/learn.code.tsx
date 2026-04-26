@@ -7,6 +7,8 @@ import { Loader2, Play, Code2 } from "lucide-react";
 import { toast } from "sonner";
 import { PracticeWithMatch } from "@/components/PracticeWithMatch";
 import { SubjectHero } from "@/components/SubjectHero";
+import { SubjectSettings } from "@/components/SubjectSettings";
+import { useSubjectSettings } from "@/hooks/useSubjectSettings";
 
 export const Route = createFileRoute("/learn/code")({
   head: () => ({ meta: [{ title: "Code Playground · Swapr" }] }),
@@ -32,6 +34,7 @@ function CodePage() {
   const [stdin, setStdin] = useState("");
   const [output, setOutput] = useState("");
   const [running, setRunning] = useState(false);
+  const { settings, update, playBeep } = useSubjectSettings("code");
 
   const onLangChange = (id: string) => {
     const next = LANGS.find((l) => l.id === id)!;
