@@ -114,8 +114,13 @@ function MathPage() {
           title="Math practice"
           subtitle={`Solve to unlock — ${done}/${total} cleared.`}
           gradient="bg-gradient-sun"
-          tag="3 levels"
-          actions={<PracticeWithMatch mode="live" label="Study with a match" />}
+          tag={`${lvls.length} level${lvls.length === 1 ? "" : "s"}`}
+          actions={
+            <>
+              <PracticeWithMatch mode="live" label="Study with a match" />
+              <SubjectSettings subjectName="Math" settings={settings} onChange={update} showTimer={false} />
+            </>
+          }
         />
 
         {/* Progress bar */}
@@ -127,9 +132,9 @@ function MathPage() {
 
         {/* Stepper */}
         <ol className="flex items-center gap-2 mb-6">
-          {LEVELS.map((lv, i) => {
+          {lvls.map((lv, i) => {
             const isUnlocked = i <= unlocked;
-            const isActive = i === level;
+            const isActive = i === safeLevel;
             return (
               <li key={lv.name} className="flex-1 flex items-center gap-2">
                 <button
@@ -157,7 +162,7 @@ function MathPage() {
           </div>
         ) : (
           <div className="bg-card rounded-3xl p-6 sm:p-8 border border-border shadow-soft">
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level {level + 1} · Problem {step + 1} of {LEVELS[level].problems.length}</div>
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level {safeLevel + 1} · Problem {step + 1} of {lvls[safeLevel].problems.length}</div>
             <div className="text-2xl sm:text-3xl font-display font-bold text-center py-6">{p.question}</div>
             <Input
               value={val}
