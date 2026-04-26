@@ -75,13 +75,14 @@ function MathPage() {
   const submit = () => {
     const n = Number(val);
     if (Number.isNaN(n)) { toast.error("Enter a number"); return; }
-    if (n !== p.answer) { toast.error("Not quite — peek at the hint."); return; }
+    if (n !== p.answer) { playBeep("fail"); toast.error("Not quite — peek at the hint."); return; }
+    playBeep("ok");
     toast.success("Correct! Unlocked next problem.");
     setVal(""); setShowHint(false);
-    if (step + 1 < LEVELS[level].problems.length) {
+    if (step + 1 < lvls[safeLevel].problems.length) {
       setStep(step + 1);
-    } else if (level + 1 < LEVELS.length) {
-      const nl = level + 1;
+    } else if (safeLevel + 1 < lvls.length) {
+      const nl = safeLevel + 1;
       setLevel(nl); setStep(0);
       setUnlocked(Math.max(unlocked, nl));
     } else {
