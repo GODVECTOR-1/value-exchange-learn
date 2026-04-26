@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeWithMatch } from "@/components/PracticeWithMatch";
 import { SubjectHero } from "@/components/SubjectHero";
+import { SubjectSettings } from "@/components/SubjectSettings";
+import { useSubjectSettings } from "@/hooks/useSubjectSettings";
 
 export const Route = createFileRoute("/learn/math")({
   head: () => ({ meta: [{ title: "Math · Swapr" }] }),
@@ -46,6 +48,15 @@ const LEVELS: { name: string; problems: Problem[] }[] = [
 
 function MathPage() {
   const { user } = useAuth();
+  const { settings, update, playBeep } = useSubjectSettings("math");
+  const LEVELS_FILTERED = useMemo(() => {
+    if (settings.difficulty === "easy") return LEVELS.slice(0, 1);
+    if (settings.difficulty === "hard") return LEVELS.slice(1);
+    return LEVELS;
+  }, [settings.difficulty]);
+  // shadow LEVELS in this scope
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _LEVELS = LEVELS_FILTERED;
   const [level, setLevel] = useState(0);
   const [step, setStep] = useState(0);
   const [val, setVal] = useState("");
