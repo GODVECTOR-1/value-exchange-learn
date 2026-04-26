@@ -4,6 +4,8 @@ import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Palette, Square, Circle, Type, Trash2, Download } from "lucide-react";
 import { SubjectHero } from "@/components/SubjectHero";
+import { SubjectSettings } from "@/components/SubjectSettings";
+import { useSubjectSettings } from "@/hooks/useSubjectSettings";
 
 export const Route = createFileRoute("/learn/design")({
   head: () => ({ meta: [{ title: "UI Design Canvas · Swapr" }] }),
@@ -22,6 +24,7 @@ function DesignPage() {
   const [color, setColor] = useState(COLORS[0]);
   const [drag, setDrag] = useState<{ id: string; ox: number; oy: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const { settings, update, playBeep } = useSubjectSettings("design");
 
   const add = (kind: "rect" | "circle" | "text") => {
     const id = Math.random().toString(36).slice(2, 9);
@@ -31,6 +34,7 @@ function DesignPage() {
     else if (kind === "circle") s = { id, kind, x, y, r: 40, color };
     else s = { id, kind, x, y, text: "Hello!", color };
     setShapes([...shapes, s]);
+    playBeep("ok");
   };
 
   const onMove = (e: React.PointerEvent) => {
@@ -70,9 +74,12 @@ function DesignPage() {
           gradient="bg-gradient-card"
           tag={`${shapes.length} shape${shapes.length === 1 ? "" : "s"}`}
           actions={
-            <Button onClick={exportPNG} className="relative z-10 rounded-full bg-foreground text-background hover:bg-foreground/90">
-              <Download className="w-4 h-4 mr-1" /> Export PNG
-            </Button>
+            <>
+              <Button onClick={exportPNG} className="relative z-10 rounded-full bg-foreground text-background hover:bg-foreground/90">
+                <Download className="w-4 h-4 mr-1" /> Export PNG
+              </Button>
+              <SubjectSettings subjectName="Design" settings={settings} onChange={update} showDifficulty={false} showTimer={false} />
+            </>
           }
         />
 

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeWithMatch } from "@/components/PracticeWithMatch";
 import { SubjectHero } from "@/components/SubjectHero";
+import { SubjectSettings } from "@/components/SubjectSettings";
+import { useSubjectSettings } from "@/hooks/useSubjectSettings";
 
 export const Route = createFileRoute("/learn/physics")({
   head: () => ({ meta: [{ title: "Physics · Swapr" }] }),
@@ -24,6 +26,7 @@ const QUIZ = [
 
 function PhysicsPage() {
   const [tab, setTab] = useState<"quiz" | "projectile">("quiz");
+  const { settings, update } = useSubjectSettings("physics");
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
@@ -33,7 +36,12 @@ function PhysicsPage() {
           subtitle="Test your knowledge or launch a projectile."
           gradient="bg-gradient-hero"
           tag="Quiz + sim"
-          actions={<PracticeWithMatch mode="live" label="Study with a match" />}
+          actions={
+            <>
+              <PracticeWithMatch mode="live" label="Study with a match" />
+              <SubjectSettings subjectName="Physics" settings={settings} onChange={update} />
+            </>
+          }
         />
         <div className="flex gap-1 mb-4 bg-muted rounded-full p-1 w-fit">
           {([["quiz", "Quiz"], ["projectile", "Projectile sim"]] as const).map(([k, l]) => (
@@ -41,30 +49,49 @@ function PhysicsPage() {
               className={`px-4 py-1.5 rounded-full text-sm font-semibold transition ${tab === k ? "bg-background shadow-soft text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{l}</button>
           ))}
         </div>
-        {tab === "quiz" ? <Quiz /> : <Projectile />}
+        {tab === "quiz" ? <Quiz settings={settings} /> : <Projectile />}
       </div>
     </AppLayout>
   );
 }
 
-function Quiz() {
+function Quiz({ settings }: { settings: ReturnType<typeof useSubjectSettings>["settings"] }) {
   const { user } = useAuth();
+  const playBeep = (type: "ok" | "fail" = "ok") => {
+    if (!settings.sound) return;
+    try {
+      const AC = (window.AudioContext || (window as any).webkitAudioContext);
+      const ctx = new AC();
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.frequency.value = type === "ok" ? 880 : 220; o.type = "sine"; g.gain.value = 0.05;
+      o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.12);
+      setTimeout(() => ctx.close(), 200);
+    } catch { /* ignore */ }
+  };
+  const quiz = useMemo(() => {
+    if (settings.difficulty === "easy") return QUIZ.slice(0, 2);
+    if (settings.difficulty === "hard") return QUIZ;
+    return QUIZ.slice(0, 3);
+  }, [settings.difficulty]);
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
-  const q = QUIZ[i];
-  const done = i >= QUIZ.length;
+  const [timeLeft, setTimeLeft] = useState(settings.timerSeconds);
+  const q = quiz[i];
+  const done = i >= quiz.length;
 
-  const submit = () => {
-    if (picked === null) return;
-    const correct = picked === q.a;
+  useEffect(() => { setI(0); setScore(0); setPicked(null); }, [settings.difficulty]);
+  useEffect(() => { setTimeLeft(settings.timerSeconds); }, [i, settings.timerSeconds, settings.timer]);
+
+  const submit = useCallback(() => {
+    const correct = picked !== null && picked === q.a;
     const nextScore = correct ? score + 1 : score;
-    if (correct) { setScore(nextScore); toast.success("Correct!"); }
-    else toast.error(`Answer: ${q.options[q.a]}`);
+    if (correct) { setScore(nextScore); playBeep("ok"); toast.success("Correct!"); }
+    else { playBeep("fail"); toast.error(picked === null ? `Time! Answer: ${q.options[q.a]}` : `Answer: ${q.options[q.a]}`); }
     setPicked(null);
     const nextI = i + 1;
     setI(nextI);
-    if (nextI >= QUIZ.length && user) {
+    if (nextI >= quiz.length && user) {
       const earned = nextScore * 10;
       (async () => {
         try {
@@ -78,19 +105,29 @@ function Quiz() {
         } catch (e) { console.error("save physics progress failed", e); }
       })();
     }
-  };
+  }, [picked, q, score, i, quiz.length, user]);
+
+  useEffect(() => {
+    if (!settings.timer || done) return;
+    if (timeLeft <= 0) { submit(); return; }
+    const id = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
+    return () => clearTimeout(id);
+  }, [settings.timer, timeLeft, done, submit]);
 
   if (done) {
     return (
       <div className="bg-card rounded-3xl p-8 border border-border text-center">
-        <h2 className="font-display font-bold text-2xl">Score: {score} / {QUIZ.length}</h2>
+        <h2 className="font-display font-bold text-2xl">Score: {score} / {quiz.length}</h2>
         <Button onClick={() => { setI(0); setScore(0); }} className="mt-4 rounded-full bg-foreground text-background hover:bg-foreground/90">Restart</Button>
       </div>
     );
   }
   return (
     <div className="bg-card rounded-3xl p-6 border border-border space-y-4">
-      <div className="text-xs text-muted-foreground">Question {i + 1} / {QUIZ.length}</div>
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span>Question {i + 1} / {quiz.length}</span>
+        {settings.timer && <span className={`font-bold ${timeLeft <= 5 ? "text-destructive" : "text-foreground"}`}>{timeLeft}s</span>}
+      </div>
       <h3 className="font-display font-bold text-xl">{q.q}</h3>
       <div className="grid grid-cols-2 gap-2">
         {q.options.map((o, k) => (
@@ -98,7 +135,7 @@ function Quiz() {
             className={`px-4 py-3 rounded-2xl border-2 font-medium text-left ${picked === k ? "border-primary bg-primary/10" : "border-border"}`}>{o}</button>
         ))}
       </div>
-      <Button onClick={submit} disabled={picked === null} className="w-full rounded-full h-12 bg-foreground text-background hover:bg-foreground/90"><Check className="w-4 h-4 mr-1" /> Submit</Button>
+      <Button onClick={submit} disabled={picked === null} className="relative z-10 w-full rounded-full h-12 bg-foreground text-background hover:bg-foreground/90"><Check className="w-4 h-4 mr-1" /> Submit</Button>
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { COURSES } from "@/data/languageLessons";
 import { Languages } from "lucide-react";
 import { PracticeWithMatch } from "@/components/PracticeWithMatch";
 import { SubjectHero } from "@/components/SubjectHero";
+import { SubjectSettings } from "@/components/SubjectSettings";
+import { useSubjectSettings } from "@/hooks/useSubjectSettings";
 
 export const Route = createFileRoute("/learn/language")({
   head: () => ({ meta: [{ title: "Languages · Swapr" }] }),
@@ -11,6 +13,7 @@ export const Route = createFileRoute("/learn/language")({
 });
 
 function LanguageHub() {
+  const { settings, update } = useSubjectSettings("language");
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
@@ -20,7 +23,12 @@ function LanguageHub() {
           subtitle="Pick a course and start a lesson."
           gradient="bg-gradient-mint"
           tag={`${COURSES.length} courses`}
-          actions={<PracticeWithMatch mode="live" label="Practice with a match" />}
+          actions={
+            <>
+              <PracticeWithMatch mode="live" label="Practice with a match" />
+              <SubjectSettings subjectName="Languages" settings={settings} onChange={update} />
+            </>
+          }
         />
 
         <div className="space-y-8">

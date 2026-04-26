@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeWithMatch } from "@/components/PracticeWithMatch";
 import { SubjectHero } from "@/components/SubjectHero";
+import { SubjectSettings } from "@/components/SubjectSettings";
+import { useSubjectSettings } from "@/hooks/useSubjectSettings";
 
 export const Route = createFileRoute("/learn/math")({
   head: () => ({ meta: [{ title: "Math · Swapr" }] }),
@@ -46,31 +48,41 @@ const LEVELS: { name: string; problems: Problem[] }[] = [
 
 function MathPage() {
   const { user } = useAuth();
+  const { settings, update, playBeep } = useSubjectSettings("math");
+  const lvls = useMemo(() => {
+    if (settings.difficulty === "easy") return LEVELS.slice(0, 1);
+    if (settings.difficulty === "hard") return LEVELS.slice(1);
+    return LEVELS;
+  }, [settings.difficulty]);
   const [level, setLevel] = useState(0);
   const [step, setStep] = useState(0);
   const [val, setVal] = useState("");
   const [showHint, setShowHint] = useState(false);
-  const [unlocked, setUnlocked] = useState(0); // highest unlocked level
+  const [unlocked, setUnlocked] = useState(0);
   const [completed, setCompleted] = useState(false);
 
-  const p = LEVELS[level].problems[step];
-  const total = LEVELS.reduce((s, l) => s + l.problems.length, 0);
+  useEffect(() => { setLevel(0); setStep(0); setVal(""); setUnlocked(0); setCompleted(false); }, [settings.difficulty]);
+
+  const safeLevel = Math.min(level, lvls.length - 1);
+  const p = lvls[safeLevel].problems[step] ?? lvls[safeLevel].problems[0];
+  const total = lvls.reduce((s, l) => s + l.problems.length, 0);
   const done = useMemo(() => {
     let c = 0;
-    for (let i = 0; i < level; i++) c += LEVELS[i].problems.length;
+    for (let i = 0; i < safeLevel; i++) c += lvls[i].problems.length;
     return c + step;
-  }, [level, step]);
+  }, [safeLevel, step, lvls]);
 
   const submit = () => {
     const n = Number(val);
     if (Number.isNaN(n)) { toast.error("Enter a number"); return; }
-    if (n !== p.answer) { toast.error("Not quite — peek at the hint."); return; }
+    if (n !== p.answer) { playBeep("fail"); toast.error("Not quite — peek at the hint."); return; }
+    playBeep("ok");
     toast.success("Correct! Unlocked next problem.");
     setVal(""); setShowHint(false);
-    if (step + 1 < LEVELS[level].problems.length) {
+    if (step + 1 < lvls[safeLevel].problems.length) {
       setStep(step + 1);
-    } else if (level + 1 < LEVELS.length) {
-      const nl = level + 1;
+    } else if (safeLevel + 1 < lvls.length) {
+      const nl = safeLevel + 1;
       setLevel(nl); setStep(0);
       setUnlocked(Math.max(unlocked, nl));
     } else {
@@ -102,8 +114,13 @@ function MathPage() {
           title="Math practice"
           subtitle={`Solve to unlock — ${done}/${total} cleared.`}
           gradient="bg-gradient-sun"
-          tag="3 levels"
-          actions={<PracticeWithMatch mode="live" label="Study with a match" />}
+          tag={`${lvls.length} level${lvls.length === 1 ? "" : "s"}`}
+          actions={
+            <>
+              <PracticeWithMatch mode="live" label="Study with a match" />
+              <SubjectSettings subjectName="Math" settings={settings} onChange={update} showTimer={false} />
+            </>
+          }
         />
 
         {/* Progress bar */}
@@ -115,9 +132,9 @@ function MathPage() {
 
         {/* Stepper */}
         <ol className="flex items-center gap-2 mb-6">
-          {LEVELS.map((lv, i) => {
+          {lvls.map((lv, i) => {
             const isUnlocked = i <= unlocked;
-            const isActive = i === level;
+            const isActive = i === safeLevel;
             return (
               <li key={lv.name} className="flex-1 flex items-center gap-2">
                 <button
@@ -145,7 +162,7 @@ function MathPage() {
           </div>
         ) : (
           <div className="bg-card rounded-3xl p-6 sm:p-8 border border-border shadow-soft">
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level {level + 1} · Problem {step + 1} of {LEVELS[level].problems.length}</div>
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Level {safeLevel + 1} · Problem {step + 1} of {lvls[safeLevel].problems.length}</div>
             <div className="text-2xl sm:text-3xl font-display font-bold text-center py-6">{p.question}</div>
             <Input
               value={val}

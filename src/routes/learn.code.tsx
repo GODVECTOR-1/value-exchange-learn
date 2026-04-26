@@ -7,6 +7,8 @@ import { Loader2, Play, Code2 } from "lucide-react";
 import { toast } from "sonner";
 import { PracticeWithMatch } from "@/components/PracticeWithMatch";
 import { SubjectHero } from "@/components/SubjectHero";
+import { SubjectSettings } from "@/components/SubjectSettings";
+import { useSubjectSettings } from "@/hooks/useSubjectSettings";
 
 export const Route = createFileRoute("/learn/code")({
   head: () => ({ meta: [{ title: "Code Playground · Swapr" }] }),
@@ -32,6 +34,7 @@ function CodePage() {
   const [stdin, setStdin] = useState("");
   const [output, setOutput] = useState("");
   const [running, setRunning] = useState(false);
+  const { settings, update, playBeep } = useSubjectSettings("code");
 
   const onLangChange = (id: string) => {
     const next = LANGS.find((l) => l.id === id)!;
@@ -56,9 +59,11 @@ function CodePage() {
       const data = await res.json();
       const out = (data.run?.stdout ?? "") + (data.run?.stderr ? `\n[stderr]\n${data.run.stderr}` : "");
       setOutput(out || "(no output)");
+      playBeep(data.run?.stderr ? "fail" : "ok");
     } catch (e: any) {
       toast.error("Execution failed");
       setOutput(`Error: ${e.message}`);
+      playBeep("fail");
     } finally {
       setRunning(false);
     }
@@ -77,12 +82,13 @@ function CodePage() {
             <>
               <PracticeWithMatch mode="collab" label="Pair code with a match" />
               <Select value={lang.id} onValueChange={onLangChange}>
-                <SelectTrigger className="w-40 rounded-full bg-white/90 text-foreground border-0"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="relative z-10 w-40 rounded-full bg-white/90 text-foreground border-0"><SelectValue /></SelectTrigger>
                 <SelectContent>{LANGS.map((l) => <SelectItem key={l.id} value={l.id}>{l.label}</SelectItem>)}</SelectContent>
               </Select>
               <Button onClick={run} disabled={running} className="relative z-10 rounded-full bg-foreground text-background hover:bg-foreground/90">
                 {running ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Play className="w-4 h-4 mr-1" />} Run
               </Button>
+              <SubjectSettings subjectName="Code" settings={settings} onChange={update} showDifficulty={false} showTimer={false} />
             </>
           }
         />

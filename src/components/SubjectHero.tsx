@@ -14,8 +14,8 @@ interface SubjectHeroProps {
 export function SubjectHero({ icon: Icon, title, subtitle, gradient, tag, actions }: SubjectHeroProps) {
   return (
     <div className={`relative overflow-hidden rounded-3xl ${gradient} p-5 sm:p-7 mb-6 shadow-card`}>
-      <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/15 blur-2xl" />
-      <div className="absolute -bottom-12 -left-8 w-44 h-44 rounded-full bg-black/10 blur-2xl" />
+      <div className="pointer-events-none absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/15 blur-2xl" />
+      <div className="pointer-events-none absolute -bottom-12 -left-8 w-44 h-44 rounded-full bg-black/10 blur-2xl" />
       <div className="relative">
         <Link to="/learn" className="inline-flex items-center gap-1.5 text-white/90 hover:text-white text-xs font-semibold mb-3">
           <ArrowLeft className="w-3.5 h-3.5" /> All subjects
