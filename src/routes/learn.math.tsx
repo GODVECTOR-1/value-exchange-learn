@@ -49,28 +49,28 @@ const LEVELS: { name: string; problems: Problem[] }[] = [
 function MathPage() {
   const { user } = useAuth();
   const { settings, update, playBeep } = useSubjectSettings("math");
-  const LEVELS_FILTERED = useMemo(() => {
+  const lvls = useMemo(() => {
     if (settings.difficulty === "easy") return LEVELS.slice(0, 1);
     if (settings.difficulty === "hard") return LEVELS.slice(1);
     return LEVELS;
   }, [settings.difficulty]);
-  // shadow LEVELS in this scope
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _LEVELS = LEVELS_FILTERED;
   const [level, setLevel] = useState(0);
   const [step, setStep] = useState(0);
   const [val, setVal] = useState("");
   const [showHint, setShowHint] = useState(false);
-  const [unlocked, setUnlocked] = useState(0); // highest unlocked level
+  const [unlocked, setUnlocked] = useState(0);
   const [completed, setCompleted] = useState(false);
 
-  const p = LEVELS[level].problems[step];
-  const total = LEVELS.reduce((s, l) => s + l.problems.length, 0);
+  useEffect(() => { setLevel(0); setStep(0); setVal(""); setUnlocked(0); setCompleted(false); }, [settings.difficulty]);
+
+  const safeLevel = Math.min(level, lvls.length - 1);
+  const p = lvls[safeLevel].problems[step] ?? lvls[safeLevel].problems[0];
+  const total = lvls.reduce((s, l) => s + l.problems.length, 0);
   const done = useMemo(() => {
     let c = 0;
-    for (let i = 0; i < level; i++) c += LEVELS[i].problems.length;
+    for (let i = 0; i < safeLevel; i++) c += lvls[i].problems.length;
     return c + step;
-  }, [level, step]);
+  }, [safeLevel, step, lvls]);
 
   const submit = () => {
     const n = Number(val);
